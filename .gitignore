@@ -49,3 +49,7 @@ ENV/
 env.bak/
 venv.bak/
 vendor/
+
+.mypy_cache/
+pg_data/
+.vscode/
