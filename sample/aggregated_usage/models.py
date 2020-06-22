@@ -26,7 +26,7 @@ class AbstractAggregatedModel(models.Model):
 
 class AggregatedDataUsage(AbstractAggregatedModel):
     """Raw data usage record for a subscription"""
-    kilobytes_used = models.IntegerField(null=False)
+    kilobytes_used = models.IntegerField(default=0)
 
     class Meta:
         constraints = [
@@ -43,7 +43,7 @@ class AggregatedDataUsage(AbstractAggregatedModel):
 
 class AggregatedVoiceUsage(AbstractAggregatedModel):
     """Raw voice usage record for a subscription"""
-    seconds_used = models.IntegerField(null=False)
+    seconds_used = models.IntegerField(default=0)
 
     class Meta:
         constraints = [
