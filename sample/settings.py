@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
+import environ
+
+env = environ.Env()
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -45,7 +49,6 @@ INSTALLED_APPS = [
     'sample.aggregated_usage.apps.AggregatedUsageConfig',
 
     'rest_framework',
-    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -85,13 +88,12 @@ WSGI_APPLICATION = 'sample.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'sample',
-        'USER': 'postgres',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-        'CONN_MAX_AGE': 3600,
-    }
+        'NAME': env('POSTGRES_DB'),
+        'USER': env('POSTGRES_USER'),
+        'PASSWORD': env('POSTGRES_PASSWORD'),
+        'HOST': env('POSTGRES_HOST'),
+        'PORT': env('POSTGRES_PORT'),
+    },
 }
 
 
@@ -132,3 +134,19 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# CELERY
+from celery.schedules import crontab
+
+CELERY_BROKER_URL = env('CELERY_BROKER_URL')
+CELERY_TIMEZONE = 'Europe/Moscow'
+CELERY_BEAT_SCHEDULE = {
+    'run_aggregate_usages': {
+        'task': 'run_aggregate_usages',
+        'schedule': crontab(hour=0, minute=15),
+    },
+}
+CELERY_TASK_ROUTES = {
+    'run_aggregate_usages': {'queue': 'usage'},
+    'aggregate_usages': {'queue': 'usage'},
+}
