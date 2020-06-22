@@ -1,6 +1,4 @@
-import time
 from datetime import date, timedelta
-from decimal import Decimal
 from random import randint
 
 from faker import Faker
@@ -8,14 +6,12 @@ from faker import Faker
 import pytest
 
 from sample.aggregated_usage.models import (AggregatedDataUsage,
-                                           AggregatedVoiceUsage)
-from sample.att_subscriptions.models import ATTSubscription
+                                            AggregatedVoiceUsage)
 from sample.att_subscriptions.tests import ATTSubscriptionFactory
-from sample.sprint_subscriptions.models import SprintSubscription
 from sample.sprint_subscriptions.tests import SprintSubscriptionFactory
 from sample.usage.models import DataUsageRecord, VoiceUsageRecord
-from sample.usage.tests import DataUsageRecordFactory, VoiceUsageRecordFactory
 from sample.usage.tasks import aggregate_usages
+from sample.usage.tests import DataUsageRecordFactory, VoiceUsageRecordFactory
 
 faker = Faker()
 
@@ -47,6 +43,7 @@ def test_aggregate_usages_task():
     aggregate_usages(att_subscription_id=att_sub1.id, sprint_subscription_id=None, date=today, usage_type='voice')
 
     assert DataUsageRecord.objects.count() == 0
+    assert VoiceUsageRecord.objects.count() == 0
 
     agg = AggregatedDataUsage.objects.get(att_subscription_id=att_sub1, usage_date=today)
     assert agg.price == sum((d.price for d in data_usage1))
@@ -72,5 +69,6 @@ def test_aggregate_usages_task():
     # Add usage data same as data_usage1
     data_usage6 = DataUsageRecordFactory.create_batch(randint(1, 15), att_subscription=att_sub1, usage_date=today)
     aggregate_usages(att_subscription_id=att_sub1.id, sprint_subscription_id=None, date=today, usage_type='data')
+    assert DataUsageRecord.objects.count() == 0
     agg = AggregatedDataUsage.objects.get(att_subscription_id=att_sub1, usage_date=today)
     assert agg.price == sum((d.price for d in data_usage1)) + sum((d.price for d in data_usage6))
