@@ -17,7 +17,7 @@ class AbstractUsageRecord(models.Model):
         null=True,
         on_delete=models.PROTECT,
     )
-    # Под price понимаем фактическую стоимость данных/секунд
+    # Под price понимаем суммарную стоимость данных/секунд
     price = models.DecimalField(decimal_places=4, max_digits=7, default=0)
     usage_date = models.DateTimeField(null=True)
 
