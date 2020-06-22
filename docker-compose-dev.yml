@@ -1,0 +1,59 @@
+version: '3.7'
+
+services:
+    web:
+        build:
+            context: ./compose/django
+            dockerfile: Dockerfile
+        depends_on:
+            - postgres
+        volumes:
+            - ./:/opt/project
+        env_file:
+            - .env
+        ports:
+            - "8000:8000"
+        working_dir: /opt/project
+        command: python manage.py runserver 0.0.0.0:8000
+
+    postgres:
+        image: postgres:latest
+        volumes:
+            - ./pg_data:/var/lib/postgresql/data
+        ports:
+            - "5432"
+        env_file:
+            - .env
+
+    celerybeat:
+        build:
+            context: ./compose/django
+            dockerfile: Dockerfile
+        depends_on:
+            - web
+        volumes:
+            - ./:/opt/project
+        env_file:
+            - .env
+        working_dir: /opt/project
+        command: python -m celery -A sample beat -l INFO
+
+    celeryworker:
+        build:
+            context: ./compose/django
+            dockerfile: Dockerfile
+        depends_on:
+            - web
+        volumes:
+            - ./:/opt/project
+        env_file:
+            - .env
+        working_dir: /opt/project
+        command: python -m celery -A sample worker -l INFO -Q usage
+
+    rabbitmq:
+        image: rabbitmq:latest
+        ports:
+            - "5672"
+        env_file:
+            - .env
